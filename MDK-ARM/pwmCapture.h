@@ -47,7 +47,7 @@ typedef struct
 {
     HAL_TIM_ActiveChannel RiseChannel; // 上升沿通道
     HAL_TIM_ActiveChannel FallChannel; // 下降沿通道
-} pwm_Capture_backPam_t;               // 这个类型不是给你用的
+} pwm_Capture_channelMap_t;               // 这个类型不是给你用的
 
 typedef struct
 {
@@ -81,7 +81,7 @@ typedef union
     {
         pwm_Capture_conf_t conf;          // 配置
         pwm_Capture_Int_t CCR;            // 寄存器值
-        pwm_Capture_backPam_t channelMap; // 这个字段不是给你用的
+        pwm_Capture_channelMap_t channelMap; // 这个字段不是给你用的
         pwm_Capture_Result_t result;      // 捕获结果
         pwm_Capture_Flag_t flag;          // 标志位
     };
