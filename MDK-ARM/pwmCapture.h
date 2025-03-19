@@ -1,5 +1,5 @@
-#ifndef M_FILE_PWMCAPTURE_H
-#define M_FILE_PWMCAPTURE_H
+#ifndef PWMCAPTURE_H
+#define PWMCAPTURE_H
 
 #pragma anon_unions
 

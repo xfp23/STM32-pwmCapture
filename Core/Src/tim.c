@@ -21,7 +21,7 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
-#include "M_File_pwmCapture.h"
+#include "pwmCapture.h"
 
 extern pwm_Capture_Handle_t pwm_Capture;
 /* USER CODE END 0 */

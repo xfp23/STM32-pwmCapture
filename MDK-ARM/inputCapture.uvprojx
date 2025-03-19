@@ -391,16 +391,6 @@
           <GroupName>Application/User/Core</GroupName>
           <Files>
             <File>
-              <FileName>M_File_pwmCapture.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\M_File_pwmCapture.c</FilePath>
-            </File>
-            <File>
-              <FileName>M_File_pwmCapture.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\M_File_pwmCapture.h</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/main.c</FilePath>
@@ -429,6 +419,11 @@
               <FileName>stm32f1xx_hal_msp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32f1xx_hal_msp.c</FilePath>
+            </File>
+            <File>
+              <FileName>pwmCapture.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\pwmCapture.c</FilePath>
             </File>
           </Files>
         </Group>

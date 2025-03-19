@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "M_File_pwmCapture.h"
+#include "pwmCapture.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

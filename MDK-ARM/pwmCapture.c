@@ -1,4 +1,4 @@
-#include "M_File_pwmCapture.h"
+#include "pwmCapture.h"
 #include "tim.h"
 #include "stdlib.h"
 #include "string.h"
@@ -17,8 +17,8 @@
  * @param handle 输入捕获句柄
  * @param conf 配置 pwm_capture_conf_t 结构体写入配置
  * @return PwmCaptureState_t 操作日志类型 
- *                      1. PWM_CAPTURE_OK 初始化成功  
- *                      2. PWM_CAPTURE_ERROR 初始化失败，可能传入了无效地址
+ *                      1. PWM_CAPTURE_OK 操作成功  
+ *                      2. PWM_CAPTURE_ERROR 操作失败，可能传入了无效地址
  *                      3. PWM_CAPTURE_INITIALIZED 传入了一个已经存在的捕获实例
  */
 PwmCaptureState_t pwmCapture_Init(pwm_Capture_Handle_t *handle, pwm_Capture_conf_t *conf)
@@ -125,8 +125,8 @@ void pwmCapture_Callback(pwm_Capture_Handle_t *handle, TIM_HandleTypeDef *htim)
  *
  * @param handle
  * @return PwmCaptureState_t 操作日志类型 
- *                      1. PWM_CAPTURE_OK 初始化成功  
- *                      2. PWM_CAPTURE_ERROR 初始化失败，可能传入了无效地址
+ *                      1. PWM_CAPTURE_OK 操作成功  
+ *                      2. PWM_CAPTURE_ERROR 操作失败，可能传入了无效地址
  */
 PwmCaptureState_t pwmCapture_Stop(pwm_Capture_Handle_t *handle)
 {
@@ -145,8 +145,8 @@ PwmCaptureState_t pwmCapture_Stop(pwm_Capture_Handle_t *handle)
  * 
  * @param handle
  * @return PwmCaptureState_t 操作日志类型 
- *                      1. PWM_CAPTURE_OK 初始化成功  
- *                      2. PWM_CAPTURE_ERROR 初始化失败，可能传入了无效地址
+ *                      1. PWM_CAPTURE_OK 操作成功  
+ *                      2. PWM_CAPTURE_ERROR 操作失败，可能传入了无效地址
  */
 PwmCaptureState_t pwmCapture_Start(pwm_Capture_Handle_t *handle)
 {
@@ -164,8 +164,8 @@ PwmCaptureState_t pwmCapture_Start(pwm_Capture_Handle_t *handle)
  *
  * @param handle
  * @return PwmCaptureState_t 操作日志类型 
- *                      1. PWM_CAPTURE_OK 初始化成功  
- *                      2. PWM_CAPTURE_ERROR 初始化失败，可能传入了无效地址
+ *                      1. PWM_CAPTURE_OK 操作成功  
+ *                      2. PWM_CAPTURE_ERROR 操作失败，可能传入了无效地址
  */
 PwmCaptureState_t pwmCapture_Reset(pwm_Capture_Handle_t *handle)
 { 
@@ -188,8 +188,8 @@ PwmCaptureState_t pwmCapture_Reset(pwm_Capture_Handle_t *handle)
  *
  * @param handle
  * @return PwmCaptureState_t 操作日志类型 
- *                      1. PWM_CAPTURE_OK 初始化成功  
- *                      2. PWM_CAPTURE_ERROR 初始化失败，可能传入了无效地址
+ *                      1. PWM_CAPTURE_OK 操作成功  
+ *                      2. PWM_CAPTURE_ERROR 操作失败，可能传入了无效地址
  */
 PwmCaptureState_t pwmCapture_Delete(pwm_Capture_Handle_t *handle)
 {
