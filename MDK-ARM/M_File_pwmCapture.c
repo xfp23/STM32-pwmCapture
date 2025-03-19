@@ -17,59 +17,50 @@
  * @param handle 输入捕获句柄
  * @param conf 配置 pwm_capture_conf_t 结构体写入配置
  */
-void pwmCapture_Init(pwm_Capture_Handle_t *handle, pwm_Capture_conf_t *conf)
+PwmCaptureState_t pwmCapture_Init(pwm_Capture_Handle_t *handle, pwm_Capture_conf_t *conf)
 {
-
-    memset((void *)handle, 0, sizeof(pwm_Capture_Handle_t));
-    // 匹配通道
-    handle->conf.FallChannel = conf->FallChannel;
-    handle->conf.RiseChannel = conf->RiseChannel;
-    handle->conf.htim = conf->htim;
-    if (handle->conf.FallChannel == TIM_CHANNEL_1)
+    if (handle == NULL || *handle != NULL)
     {
-        handle->callBack_param.FallChannel = HAL_TIM_ACTIVE_CHANNEL_1;
-    }
-    else if (handle->conf.FallChannel == TIM_CHANNEL_2)
-    {
-        handle->callBack_param.FallChannel = HAL_TIM_ACTIVE_CHANNEL_2;
-    }
-    else if (handle->conf.FallChannel == TIM_CHANNEL_3)
-    {
-        handle->callBack_param.FallChannel = HAL_TIM_ACTIVE_CHANNEL_3;
-    }
-    else if (handle->conf.FallChannel == TIM_CHANNEL_4)
-    {
-        handle->callBack_param.FallChannel = HAL_TIM_ACTIVE_CHANNEL_4;
-    }
-    else if (handle->conf.FallChannel == TIM_CHANNEL_ALL)
-    {
-        handle->callBack_param.FallChannel = HAL_TIM_ACTIVE_CHANNEL_CLEARED;
+        return PWM_CAPTURE_INITIALIZED;
     }
 
-    if (handle->conf.RiseChannel == TIM_CHANNEL_1)
+    *handle = calloc(1, sizeof(pwm_Capture_Class_t));
+    if (*handle == NULL)
     {
-        handle->callBack_param.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_1;
-    }
-    else if (handle->conf.RiseChannel == TIM_CHANNEL_2)
-    {
-        handle->callBack_param.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_2;
-    }
-    else if (handle->conf.RiseChannel == TIM_CHANNEL_3)
-    {
-        handle->callBack_param.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_3;
-    }
-    else if (handle->conf.RiseChannel == TIM_CHANNEL_4)
-    {
-        handle->callBack_param.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_4;
-    }
-    else if (handle->conf.RiseChannel == TIM_CHANNEL_ALL)
-    {
-        handle->callBack_param.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_CLEARED;
+        return PWM_CAPTURE_ERROR;
     }
 
-    __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
-    HAL_TIM_IC_Start_IT(handle->conf.htim, handle->conf.RiseChannel);
-    HAL_TIM_IC_Start_IT(handle->conf.htim, handle->conf.FallChannel);
+    (*handle)->conf.FallChannel = conf->FallChannel;
+    (*handle)->conf.RiseChannel = conf->RiseChannel;
+    (*handle)->conf.htim = conf->htim;
+
+    // 处理通道映射
+    switch ((*handle)->conf.FallChannel)
+    {
+        case TIM_CHANNEL_1: (*handle)->channelMap.FallChannel = HAL_TIM_ACTIVE_CHANNEL_1; break;
+        case TIM_CHANNEL_2: (*handle)->channelMap.FallChannel = HAL_TIM_ACTIVE_CHANNEL_2; break;
+        case TIM_CHANNEL_3: (*handle)->channelMap.FallChannel = HAL_TIM_ACTIVE_CHANNEL_3; break;
+        case TIM_CHANNEL_4: (*handle)->channelMap.FallChannel = HAL_TIM_ACTIVE_CHANNEL_4; break;
+        case TIM_CHANNEL_ALL: (*handle)->channelMap.FallChannel = HAL_TIM_ACTIVE_CHANNEL_CLEARED; break;
+        default: return PWM_CAPTURE_CHANNEL_MISMATCH;
+    }
+
+    switch ((*handle)->conf.RiseChannel)
+    {
+        case TIM_CHANNEL_1: (*handle)->channelMap.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_1; break;
+        case TIM_CHANNEL_2: (*handle)->channelMap.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_2; break;
+        case TIM_CHANNEL_3: (*handle)->channelMap.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_3; break;
+        case TIM_CHANNEL_4: (*handle)->channelMap.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_4; break;
+        case TIM_CHANNEL_ALL: (*handle)->channelMap.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_CLEARED; break;
+        default: return PWM_CAPTURE_CHANNEL_MISMATCH;
+    }
+
+    __HAL_TIM_CLEAR_FLAG((*handle)->conf.htim, TIM_FLAG_CC1);
+    __HAL_TIM_CLEAR_FLAG((*handle)->conf.htim, TIM_FLAG_CC2);
+    HAL_TIM_IC_Start_IT((*handle)->conf.htim, (*handle)->conf.RiseChannel);
+    HAL_TIM_IC_Start_IT((*handle)->conf.htim, (*handle)->conf.FallChannel);
+    (*handle)->flag.capSwitch = true;
+    return PWM_CAPTURE_OK;
 }
 
 /**
@@ -81,47 +72,47 @@ void pwmCapture_Init(pwm_Capture_Handle_t *handle, pwm_Capture_conf_t *conf)
  */
 void pwmCapture_Callback(pwm_Capture_Handle_t *handle, TIM_HandleTypeDef *htim)
 {
-    if (htim->Channel == handle->callBack_param.RiseChannel)
-    {
-        if (handle->flag.isRiseEdge == OFF)
-        {
-            handle->flag.isRiseEdge = ON;
+    if (handle == NULL || *handle == NULL) return;
+    if (!(*handle)->flag.capSwitch) return;
 
-            __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
-        }
-        if (handle->flag.isRiseEdge == ON)
+    if (htim->Channel == (*handle)->channelMap.RiseChannel)
+    {
+        if ((*handle)->flag.isRiseEdge == OFF)
         {
-            __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
-            handle->CCR.CCR1 = __HAL_TIM_GET_COMPARE(handle->conf.htim, handle->conf.RiseChannel);
+            (*handle)->flag.isRiseEdge = ON;
+            __HAL_TIM_CLEAR_FLAG((*handle)->conf.htim, TIM_FLAG_CC1);
+        }
+        if ((*handle)->flag.isRiseEdge == ON)
+        {
+            __HAL_TIM_CLEAR_FLAG((*handle)->conf.htim, TIM_FLAG_CC1);
+            (*handle)->CCR.CCR1 = __HAL_TIM_GET_COMPARE((*handle)->conf.htim, (*handle)->conf.RiseChannel);
         }
     }
 
-    if (htim->Channel == handle->callBack_param.FallChannel)
+    if (htim->Channel == (*handle)->channelMap.FallChannel)
     {
-        __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC2);
-        handle->CCR.CCR2 = __HAL_TIM_GET_COMPARE(handle->conf.htim, handle->conf.FallChannel);
-        handle->flag.isFallEdge = ON;
+        __HAL_TIM_CLEAR_FLAG((*handle)->conf.htim, TIM_FLAG_CC2);
+        (*handle)->CCR.CCR2 = __HAL_TIM_GET_COMPARE((*handle)->conf.htim, (*handle)->conf.FallChannel);
+        (*handle)->flag.isFallEdge = ON;
     }
 
-    if (handle->flag.isFallEdge == ON && handle->flag.isRiseEdge == ON)
+    if ((*handle)->flag.isFallEdge == ON && (*handle)->flag.isRiseEdge == ON)
     {
-        memset((void *)(&handle->flag), OFF, sizeof(pwm_Capture_Flag_t)); // 清空标志位开始计算
+        memset(&(*handle)->flag, OFF,1);
 
         /** 开始计算 */
-
         // 周期
-        handle->result.period = (float)handle->CCR.CCR1 * 1E-6;
+        (*handle)->result.period = (float)(*handle)->CCR.CCR1 * 1E-6;
 
         // 占空比
-
-        handle->result.duty = ((float)handle->CCR.CCR2 / (float)handle->CCR.CCR1) * 100;
-        handle->result.pulseWidth = handle->CCR.CCR2;
+        (*handle)->result.duty = ((float)(*handle)->CCR.CCR2 / (float)(*handle)->CCR.CCR1) * 100;
+        (*handle)->result.pulseWidth = (*handle)->CCR.CCR2;
 
         // 频率
-        handle->result.freq = 1.00 / (handle->result.period);
+        (*handle)->result.freq = 1.00 / ((*handle)->result.period);
 
-        handle->flag.isCapComplete = ON;
-        memset((void *)&handle->CCR, 0, sizeof(pwm_Capture_Int_t));
+        (*handle)->flag.isCapComplete = ON;
+        memset(&(*handle)->CCR, 0, sizeof(pwm_Capture_Int_t));
     }
 }
 
@@ -130,13 +121,32 @@ void pwmCapture_Callback(pwm_Capture_Handle_t *handle, TIM_HandleTypeDef *htim)
  *
  * @param handle
  */
-void pwmCapture_Stop(pwm_Capture_Handle_t *handle)
+PwmCaptureState_t pwmCapture_Stop(pwm_Capture_Handle_t *handle)
 {
-    __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
-    __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC2);
-    handle->flag.isCapComplete = OFF;
-    HAL_TIM_IC_Stop_IT(handle->conf.htim, handle->conf.RiseChannel);
-    HAL_TIM_IC_Stop_IT(handle->conf.htim, handle->conf.FallChannel);
+    if (handle == NULL || *handle == NULL) return PWM_CAPTURE_ERROR;
+    __HAL_TIM_CLEAR_FLAG((*handle)->conf.htim, TIM_FLAG_CC1);
+    __HAL_TIM_CLEAR_FLAG((*handle)->conf.htim, TIM_FLAG_CC2);
+    (*handle)->flag.isCapComplete = OFF;
+    (*handle)->flag.capSwitch = false;
+    HAL_TIM_IC_Stop_IT((*handle)->conf.htim, (*handle)->conf.RiseChannel);
+    HAL_TIM_IC_Stop_IT((*handle)->conf.htim, (*handle)->conf.FallChannel);
+    return PWM_CAPTURE_OK;
+}
+
+/**
+ * @brief 开启pwm捕获
+ * 
+ * @param handle
+ */
+PwmCaptureState_t pwmCapture_Start(pwm_Capture_Handle_t *handle)
+{
+    if (handle == NULL || *handle == NULL) return PWM_CAPTURE_ERROR;
+    __HAL_TIM_CLEAR_FLAG((*handle)->conf.htim, TIM_FLAG_CC1);
+    __HAL_TIM_CLEAR_FLAG((*handle)->conf.htim, TIM_FLAG_CC2);
+    HAL_TIM_IC_Start_IT((*handle)->conf.htim, (*handle)->conf.RiseChannel);
+    HAL_TIM_IC_Start_IT((*handle)->conf.htim, (*handle)->conf.FallChannel);
+    (*handle)->flag.capSwitch = true;
+    return PWM_CAPTURE_OK;
 }
 
 /**
@@ -144,10 +154,33 @@ void pwmCapture_Stop(pwm_Capture_Handle_t *handle)
  *
  * @param handle
  */
-void pwmCapture_Reset(pwm_Capture_Handle_t *handle)
-{
+PwmCaptureState_t pwmCapture_Reset(pwm_Capture_Handle_t *handle)
+{ 
+    if (handle == NULL || *handle == NULL) return PWM_CAPTURE_ERROR;
+    HAL_TIM_IC_Stop_IT((*handle)->conf.htim, (*handle)->conf.RiseChannel);
+    HAL_TIM_IC_Stop_IT((*handle)->conf.htim, (*handle)->conf.FallChannel);
+    // 清空
+    memset(&(*handle)->result, 0, sizeof(pwm_Capture_Result_t));
+    memset(&(*handle)->flag, 0, sizeof(pwm_Capture_Flag_t));
+    memset(&(*handle)->CCR, 0, sizeof(pwm_Capture_Int_t));
+    (*handle)->flag.capSwitch = true;
+    __HAL_TIM_CLEAR_FLAG((*handle)->conf.htim, TIM_FLAG_CC1);
+    HAL_TIM_IC_Start_IT((*handle)->conf.htim, (*handle)->conf.RiseChannel);
+    HAL_TIM_IC_Start_IT((*handle)->conf.htim, (*handle)->conf.FallChannel);
+    return PWM_CAPTURE_OK;
+}
 
-    __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
-    HAL_TIM_IC_Start_IT(handle->conf.htim, handle->conf.RiseChannel);
-    HAL_TIM_IC_Start_IT(handle->conf.htim, handle->conf.FallChannel);
+/**
+ * @brief 删除pwm捕获输入
+ *
+ * @param handle
+ */
+PwmCaptureState_t pwmCapture_Delete(pwm_Capture_Handle_t *handle)
+{
+    if (handle == NULL || *handle == NULL) return PWM_CAPTURE_ERROR;
+    HAL_TIM_IC_Stop_IT((*handle)->conf.htim, (*handle)->conf.RiseChannel);
+    HAL_TIM_IC_Stop_IT((*handle)->conf.htim, (*handle)->conf.FallChannel);
+    free(*handle);
+    *handle = NULL;
+    return PWM_CAPTURE_OK;
 }

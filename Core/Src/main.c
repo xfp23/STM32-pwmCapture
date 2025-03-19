@@ -45,7 +45,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-pwm_Capture_Handle_t pwm_Capture;
+pwm_Capture_Handle_t pwm_Capture = NULL;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
