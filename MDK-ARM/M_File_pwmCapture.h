@@ -39,9 +39,8 @@ typedef CAPTURE_TIM_BIT_T(CAPTURE_TIM_BITS) capture_timbits_t;
 
 typedef struct
 {
-    capture_timbits_t firstEdgeRise_CCR;  // 第一个上升沿的寄存器值
-    capture_timbits_t secondEdgeRise_CCR; // 第二个上升沿的寄存器值
-    capture_timbits_t FallEdge_CCR;       // 下降沿的寄存器值
+    capture_timbits_t CCR1; // 寄存器CCR1的值
+    capture_timbits_t CCR2; // 寄存器CCR2的值
 } pwm_Capture_Int_t;
 
 typedef struct
@@ -59,18 +58,19 @@ typedef struct
 
 typedef struct
 {
-    uint8_t isFirstRiseEdge : 1;
-    uint8_t isSecondRiseEdge : 1;
+    uint8_t isRiseEdge : 1;
     uint8_t isFallEdge : 1;
     uint8_t isCapComplete : 1; // 捕获完成
-    uint8_t Reserve_bits : 4;  // 保留位
+    uint8_t Reserve_bits : 5;  // 保留位
 } pwm_Capture_Flag_t;
 
 typedef struct
 {
     uint32_t freq;      // PWM频率
+    float pulseWidth; // 脉宽
     float duty;         // PWM占空比
-    float cycle;        // pwm周期
+    float period;        // pwm周期
+    
 } pwm_Capture_Result_t; // pwm捕获结果
 
 typedef union

@@ -67,7 +67,7 @@ void pwmCapture_Init(pwm_Capture_Handle_t *handle, pwm_Capture_conf_t *conf)
         handle->callBack_param.RiseChannel = HAL_TIM_ACTIVE_CHANNEL_CLEARED;
     }
 
-   __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
+    __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
     HAL_TIM_IC_Start_IT(handle->conf.htim, handle->conf.RiseChannel);
     HAL_TIM_IC_Start_IT(handle->conf.htim, handle->conf.FallChannel);
 }
@@ -75,7 +75,7 @@ void pwmCapture_Init(pwm_Capture_Handle_t *handle, pwm_Capture_conf_t *conf)
 /**
  * @brief 中断回调
  * @note 1. 回调函数 在hal库中的  HAL_TIM_IC_CaptureCallback() 函数里调用
- *       2. if(htim->Instance == TIM7) 调用前判断定时器触发
+ *       2. if(htim->Instance == TIMx) 调用前判断定时器触发
  * @param pwm_Cap_handle
  * @param htim 传入HAL_TIM_IC_CaptureCallback()函数的形参就可以
  */
@@ -83,68 +83,66 @@ void pwmCapture_Callback(pwm_Capture_Handle_t *handle, TIM_HandleTypeDef *htim)
 {
     if (htim->Channel == handle->callBack_param.RiseChannel)
     {
-        if (handle->flag.isFirstRiseEdge == OFF && handle->flag.isSecondRiseEdge == OFF)
+        if (handle->flag.isRiseEdge == OFF)
         {
-            handle->flag.isFirstRiseEdge = ON;
-            handle->CCR.firstEdgeRise_CCR = __HAL_TIM_GET_COMPARE(handle->conf.htim, handle->conf.RiseChannel);
-			 __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
+            handle->flag.isRiseEdge = ON;
+
+            __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
         }
-        else if (handle->flag.isFirstRiseEdge == ON && handle->flag.isSecondRiseEdge == OFF)
+        if (handle->flag.isRiseEdge == ON)
         {
-            
-            handle->CCR.secondEdgeRise_CCR = __HAL_TIM_GET_COMPARE(handle->conf.htim, handle->conf.RiseChannel);
-			__HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
-            handle->flag.isSecondRiseEdge = ON;
+            __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
+            handle->CCR.CCR1 = __HAL_TIM_GET_COMPARE(handle->conf.htim, handle->conf.RiseChannel);
         }
     }
 
     if (htim->Channel == handle->callBack_param.FallChannel)
     {
         __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC2);
-        handle->CCR.FallEdge_CCR = __HAL_TIM_GET_COMPARE(handle->conf.htim, handle->conf.FallChannel);
+        handle->CCR.CCR2 = __HAL_TIM_GET_COMPARE(handle->conf.htim, handle->conf.FallChannel);
         handle->flag.isFallEdge = ON;
     }
 
-    if (handle->flag.isFallEdge == ON && handle->flag.isSecondRiseEdge == ON && handle->flag.isFirstRiseEdge == ON)
+    if (handle->flag.isFallEdge == ON && handle->flag.isRiseEdge == ON)
     {
         memset((void *)(&handle->flag), OFF, sizeof(pwm_Capture_Flag_t)); // 清空标志位开始计算
 
         /** 开始计算 */
 
         // 周期
-        handle->result.cycle = (handle->CCR.secondEdgeRise_CCR + handle->CCR.FallEdge_CCR);
+        handle->result.period = (float)handle->CCR.CCR1 * 1E-6;
 
         // 占空比
-       // if (handle->CCR.secondEdgeRise_CCR != handle->CCR.firstEdgeRise_CCR)
-        {
-            handle->result.duty = ((float)handle->CCR.FallEdge_CCR / 999) * 100;
-        }
+
+        handle->result.duty = ((float)handle->CCR.CCR2 / (float)handle->CCR.CCR1) * 100;
+        handle->result.pulseWidth = handle->CCR.CCR2;
 
         // 频率
-        handle->result.freq = 1 / ((handle->result.cycle) * 1E-6);
-		handle->flag.isCapComplete = ON;
-		memset((void *)&handle->CCR,0,sizeof(pwm_Capture_Int_t));
+        handle->result.freq = 1.00 / (handle->result.period);
+
+        handle->flag.isCapComplete = ON;
+        memset((void *)&handle->CCR, 0, sizeof(pwm_Capture_Int_t));
     }
 }
 
 /**
  * @brief 停止PWM捕获输入
- * 
- * @param handle 
+ *
+ * @param handle
  */
 void pwmCapture_Stop(pwm_Capture_Handle_t *handle)
 {
     __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC1);
     __HAL_TIM_CLEAR_FLAG(handle->conf.htim, TIM_FLAG_CC2);
-	handle->flag.isCapComplete = OFF;
+    handle->flag.isCapComplete = OFF;
     HAL_TIM_IC_Stop_IT(handle->conf.htim, handle->conf.RiseChannel);
     HAL_TIM_IC_Stop_IT(handle->conf.htim, handle->conf.FallChannel);
 }
 
 /**
  * @brief 重启复位pwm捕获输入
- * 
- * @param handle 
+ *
+ * @param handle
  */
 void pwmCapture_Reset(pwm_Capture_Handle_t *handle)
 {
