@@ -87,7 +87,7 @@ typedef union
     };
 } pwm_Capture_Class_t;
 
-typedef pwm_Capture_Class_t *pwm_Capture_Handle_t; // 捕获
+typedef pwm_Capture_Class_t *pwm_Capture_Handle_t; // 捕获句柄类型
 
 PwmCaptureState_t pwmCapture_Init(pwm_Capture_Handle_t *handle, pwm_Capture_conf_t *conf);
 
