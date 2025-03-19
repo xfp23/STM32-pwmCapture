@@ -5,7 +5,7 @@
 
 void PIDController_Init(PIDController_Handle_t *handle, PIDController_Conf_t *conf)
 {
-	if (handle == NULL || *handle != NULL)  // 🚨 需要判断 *handle 是否已经被分配过
+	if (handle == NULL || *handle != NULL) 
 	{
 		return;
 	}
