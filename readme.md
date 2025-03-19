@@ -53,16 +53,15 @@ state = pwmCapture_Start(&pwmCapture_Handle);
 
 ### 3. 捕获回调
 
-定时器的中断回调函数会在每次捕获到PWM信号时被触发，处理捕获数据：
+定时器的中断回调函数会在每次捕获到PWM信号时被触发，处理捕获数据。在`tim.c`中重写HAL库函数`HAL_TIM_IC_CaptureCallback` :
 
 ```c
-void pwmCapture_Callback(pwm_Capture_Handle_t *pwm_Cap_handle, TIM_HandleTypeDef *htim) {
-    // 捕获事件处理逻辑
-    uint32_t pulseWidth = pwmCapture_getPulseWidth(*pwm_Cap_handle);
-    uint32_t frequency = pwmCapture_getFreq(*pwm_Cap_handle);
-    float dutyCycle = pwmCapture_getDuty(*pwm_Cap_handle);
-
-    // 进一步处理捕获的数据
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+  if(htim->Instance == TIM1)
+  {
+    pwmCapture_Callback(&pwm_Capture,htim);
+  }
 }
 ```
 
