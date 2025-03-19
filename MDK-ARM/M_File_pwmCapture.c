@@ -184,3 +184,51 @@ PwmCaptureState_t pwmCapture_Delete(pwm_Capture_Handle_t *handle)
     *handle = NULL;
     return PWM_CAPTURE_OK;
 }
+
+/**
+ * @brief 获取捕获结果的频率 单位: hz
+ * 
+ * @param handle 
+ * @return uint32_t 
+ */
+uint32_t pwmCapture_getFreq(pwm_Capture_Handle_t handle)
+{
+    if(handle == NULL) return 0;
+     return handle->result.freq;
+}
+
+/**
+ * @brief 获取捕获结果的脉宽
+ * 
+ * @param handle 
+ * @return uint32_t 
+ */
+uint32_t pwmCapture_getPulseWidth(pwm_Capture_Handle_t handle)
+{
+    if(handle == NULL) return 0;
+    return handle->result.pulseWidth;
+}
+
+/**
+ * @brief 获取捕获结果的占空比
+ * 
+ * @param handle 
+ * @return float 
+ */
+float pwmCapture_getDuty(pwm_Capture_Handle_t handle)
+{
+    if(handle == NULL) return 0;
+    return handle->result.duty;
+}
+
+/**
+ * @brief 获取捕获结果的周期 单位 : 秒
+ * 
+ * @param handle 
+ * @return uint32_t 
+ */
+uint32_t pwmCapture_getPeriod(pwm_Capture_Handle_t handle)
+{
+    if(handle == NULL) return 0;
+    return handle->result.period;
+}

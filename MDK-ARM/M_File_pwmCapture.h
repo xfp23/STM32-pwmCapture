@@ -61,7 +61,7 @@ typedef struct
 typedef struct
 {
     uint32_t freq;    // PWM频率 单位: hz
-    float pulseWidth; // 脉宽
+    uint32_t pulseWidth; // 脉宽
     float duty;       // PWM占空比
     float period;     // pwm周期 单位: 秒
 
@@ -102,6 +102,14 @@ PwmCaptureState_t pwmCapture_Start(pwm_Capture_Handle_t *handle);
 PwmCaptureState_t pwmCapture_Reset(pwm_Capture_Handle_t *handle);
 
 PwmCaptureState_t pwmCapture_Delete(pwm_Capture_Handle_t *handle);
+
+uint32_t pwmCapture_getPulseWidth(pwm_Capture_Handle_t handle);
+
+uint32_t pwmCapture_getFreq(pwm_Capture_Handle_t handle);
+
+float pwmCapture_getDuty(pwm_Capture_Handle_t handle);
+
+uint32_t pwmCapture_getPeriod(pwm_Capture_Handle_t handle);
 
 #ifdef __cplusplus
 }
