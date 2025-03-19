@@ -248,3 +248,20 @@ uint32_t pwmCapture_getPeriod(pwm_Capture_Handle_t handle)
     if(handle == NULL) return 0;
     return handle->result.period;
 }
+
+/**
+ * @brief 获取捕获是否完成
+ * 
+ * @param handle 
+ * @return bool true : 完成 false : 未完成
+ */
+bool pwmCapture_getComplete(pwm_Capture_Handle_t *handle)
+{
+	if(handle == NULL || *handle == NULL) return false;
+	if((*handle)->flag.isCapComplete == ON)
+	{
+	(*handle)->flag.isCapComplete = OFF;
+		return true;
+	}
+	return false;
+}

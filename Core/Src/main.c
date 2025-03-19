@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "pwmCapture.h"
+#include "PID.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +47,11 @@
 
 /* USER CODE BEGIN PV */
 pwm_Capture_Handle_t pwm_Capture = NULL;
+PIDController_Handle_t pidHandle = NULL;
+uint8_t flag = 0;
+float pidOut = 0;
+float pidInput = 0;
+float pidSetPoint = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -67,7 +73,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -99,12 +105,32 @@ int main(void)
 	 .FallChannel = TIM_CHANNEL_2,
  };
  pwmCapture_Init(&pwm_Capture,&conf);
+ PIDController_Conf_t pid_conf = {
+  .kp = 4.65,
+  .ki = 0.01,
+  .kd = 0.00,
+  .limMax = 100.00,
+  .limMin = 0,
+  .limMaxInt = 10,
+  .limMinInt = -5.00,
+  .tau = 3,
+  .T = 50,
+ };
+ PIDController_Init(&pidHandle,&pid_conf);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+     __NOP();
+	  pidOut = PIDController_Update(&pidHandle,pidSetPoint,pidInput);
+	  if(pwmCapture_getComplete(&pwm_Capture) == true)
+	  {
+	   pidInput = pwmCapture_getDuty(pwm_Capture);
+	   pwmCapture_Stop(&pwm_Capture);
+	  }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

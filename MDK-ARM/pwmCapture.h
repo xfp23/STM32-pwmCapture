@@ -111,6 +111,8 @@ float pwmCapture_getDuty(pwm_Capture_Handle_t handle);
 
 uint32_t pwmCapture_getPeriod(pwm_Capture_Handle_t handle);
 
+bool pwmCapture_getComplete(pwm_Capture_Handle_t *handle);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
